@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Muhammad Talha PT | Neuro Rehab Specialist & Chiropractor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0a192f 0%, #0f3460 100%);
+            color: #e6f1ff;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+        
+        .neon-text {
+            text-shadow: 0 0 10px rgba(100, 255, 255, 0.7), 
+                         0 0 20px rgba(100, 255, 255, 0.5);
+        }
+        
+        .glow-box {
+            box-shadow: 0 0 15px rgba(100, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .glow-box:hover {
+            box-shadow: 0 0 25px rgba(100, 255, 255, 0.5);
+            transform: translateY(-5px);
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(100, 255, 255, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(100, 255, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(100, 255, 255, 0); }
+        }
+        
+        .neuron-path {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: dash 5s linear forwards;
+        }
+        
+        @keyframes dash {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+        
+        #brain-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .section {
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .service-card {
+            background: rgba(10, 25, 47, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(100, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .service-card:hover {
+            background: rgba(10, 25, 47, 0.9);
+            border: 1px solid rgba(100, 255, 255, 0.3);
+        }
+        
+        .certification-card {
+            perspective: 1000px;
+            height: 280px;
+            margin-bottom: 2rem;
+        }
+        
+        .certification-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
+        
+        .certification-card:hover .certification-inner {
+            transform: rotateY(180deg);
+        }
+        
+        .certification-front, .certification-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .certification-front {
+            background: rgba(16, 42, 87, 0.7);
+            border: 1px solid rgba(100, 255, 218, 0.2);
+        }
+        
+        .certification-back {
+            background: rgba(10, 25, 47, 0.9);
+            border: 1px solid rgba(100, 255, 218, 0.3);
+            transform: rotateY(180deg);
+        }
+        
+        .floating {
+            animation: floating 6s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .scroll-indicator {
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+
+        .qualification-badge {
+            background: rgba(100, 255, 218, 0.1);
+            border-left: 3px solid #64ffda;
+        }
+        
+        .treatment-card {
+            transition: all 0.3s ease;
+        }
+        
+        .treatment-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(100, 255, 218, 0.1);
+        }
+        
+        .clinic-info-card {
+            background: rgba(10, 25, 47, 0.7);
+            backdrop-filter: blur(10px);
+        }
+        
+        .profile-pic {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid rgba(100, 255, 218, 0.3);
+            box-shadow: 0 0 20px rgba(100, 255, 218, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- 3D Brain Background -->
+    <div id="brain-container"></div>
+    
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 bg-gradient-to-b from-black/70 to-transparent backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex-shrink-0 flex items-center">
+                    <span class="text-xl font-bold neon-text">Dr. Talha PT</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8">
+                        <a href="#home" class="px-3 py-2 rounded-md text-sm font-medium hover:text-teal-300 transition">Home</a>
+                        <a href="#about" class="px-3 py-2 rounded-md text-sm font-medium hover:text-teal-300 transition">About</a>
+                        <a href="#services" class="px-3 py-2 rounded-md text-sm font-medium hover:text-teal-300 transition">Services</a>
+                        <a href="#certifications" class="px-3 py-2 rounded-md text-sm font-medium hover:text-teal-300 transition">Certifications</a>
+                        <a href="#contact" class="px-3 py-2 rounded-md text-sm font-medium hover:text-teal-300 transition">Contact</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white focus:outline-none">
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-gray-900/90 backdrop-blur-sm">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#home" class="block px-3 py-2 rounded-md text-base font-medium hover:text-teal-300 transition">Home</a>
+                <a href="#about" class="block px-3 py-2 rounded-md text-base font-medium hover:text-teal-300 transition">About</a>
+                <a href="#services" class="block px-3 py-2 rounded-md text-base font-medium hover:text-teal-300 transition">Services</a>
+                <a href="#certifications" class="block px-3 py-2 rounded-md text-base font-medium hover:text-teal-300 transition">Certifications</a>
+                <a href="#contact" class="block px-3 py-2 rounded-md text-base font-medium hover:text-teal-300 transition">Contact</a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero Section with Profile Picture -->
+    <section id="home" class="section flex items-center justify-center relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center z-10">
+            <div class="floating mb-8 flex flex-col items-center">
+                <img src="https://i.ibb.co/Fbmycrbv/dr-talha.jpg" alt="Dr. Muhammad Talha PT" class="profile-pic mb-6">
+                <h1 class="text-5xl md:text-7xl font-bold mb-4 neon-text">Dr. Muhammad Talha PT</h1>
+                <h2 class="text-2xl md:text-3xl font-light text-teal-300 mb-4">
+                    DPT (Peshawar), MSPT Neurology (Islamabad)
+                </h2>
+                <h3 class="text-xl md:text-2xl font-light text-teal-200 mb-8">
+                    Certified Chiropractor & Manual Therapist (UK)<br>
+                    Member, Pakistan Physical Therapy Association
+                </h3>
+            </div>
+            
+            <div class="max-w-3xl mx-auto">
+                <p class="text-lg md:text-xl mb-12 text-gray-300">Restoring movement, function and quality of life through evidence-based neuro rehabilitation and manual therapy techniques.</p>
+                
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="#contact" class="px-8 py-4 bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-full transition duration-300 transform hover:scale-105 glow-box">
+                        Book an Appointment
+                    </a>
+                    <a href="#services" class="px-8 py-4 border border-teal-400 text-teal-300 hover:bg-teal-900/30 font-semibold rounded-full transition duration-300 transform hover:scale-105 glow-box">
+                        Our Services
+                    </a>
+                </div>
+            </div>
+            
+            <div class="mt-24 scroll-indicator">
+                <a href="#about" class="text-teal-300 animate-bounce inline-block">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Neural Network Animation -->
+        <svg class="absolute inset-0 w-full h-full opacity-20" xmlns="http://www.w3.org/2000/svg">
+            <path class="neuron-path" fill="none" stroke="#64ffda" stroke-width="1" d="M100,100 C200,50 300,150 400,100 C500,50 600,150 700,100 C800,50 900,150 1000,100" />
+            <path class="neuron-path" fill="none" stroke="#64ffda" stroke-width="1" d="M100,300 C200,250 300,350 400,300 C500,250 600,350 700,300 C800,250 900,350 1000,300" />
+            <path class="neuron-path" fill="none" stroke="#64ffda" stroke-width="1" d="M100,500 C200,450 300,550 400,500 C500,450 600,550 700,500 C800,450 900,550 1000,500" />
+            <circle cx="100" cy="100" r="3" fill="#64ffda" />
+            <circle cx="400" cy="100" r="3" fill="#64ffda" />
+            <circle cx="700" cy="100" r="3" fill="#64ffda" />
+            <circle cx="1000" cy="100" r="3" fill="#64ffda" />
+            <circle cx="100" cy="300" r="3" fill="#64ffda" />
+            <circle cx="400" cy="300" r="3" fill="#64ffda" />
+            <circle cx="700" cy="300" r="3" fill="#64ffda" />
+            <circle cx="1000" cy="300" r="3" fill="#64ffda" />
+            <circle cx="100" cy="500" r="3" fill="#64ffda" />
+            <circle cx="400" cy="500" r="3" fill="#64ffda" />
+            <circle cx="700" cy="500" r="3" fill="#64ffda" />
+            <circle cx="1000" cy="500" r="3" fill="#64ffda" />
+        </svg>
+    </section>
+    
+    <!-- About Section -->
+    <section id="about" class="section py-20 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4 neon-text">About Me</h2>
+                <div class="w-24 h-1 bg-teal-400 mx-auto mb-6"></div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                <div>
+                    <h3 class="text-2xl font-bold mb-6 text-teal-300">Professional Background</h3>
+                    <p class="mb-6 text-gray-300">
+                        I am a dedicated neuro rehabilitation specialist with extensive training in chiropractic care and orthopedic manual therapy. My practice focuses on evidence-based treatments to help patients recover from neurological conditions, sports injuries, and musculoskeletal disorders.
+                    </p>
+                    
+                    <h3 class="text-2xl font-bold mb-6 text-teal-300">My Approach</h3>
+                    <p class="mb-6 text-gray-300">
+                        I believe in a holistic approach to patient care, combining advanced manual therapy techniques with personalized rehabilitation programs. Each treatment plan is tailored to the individual's specific needs and goals.
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div class="p-6 bg-gray-800/50 rounded-lg glow-box">
+                            <h4 class="text-xl font-semibold mb-3 text-teal-200">Assessment</h4>
+                            <p class="text-gray-300 text-sm">Comprehensive evaluation of your condition using advanced diagnostic techniques.</p>
+                        </div>
+                        <div class="p-6 bg-gray-800/50 rounded-lg glow-box">
+                            <h4 class="text-xl font-semibold mb-3 text-teal-200">Treatment</h4>
+                            <p class="text-gray-300 text-sm">Evidence-based interventions including manual therapy, therapeutic exercises, and modalities.</p>
+                        </div>
+                        <div class="p-6 bg-gray-800/50 rounded-lg glow-box">
+                            <h4 class="text-xl font-semibold mb-3 text-teal-200">Rehabilitation</h4>
+                            <p class="text-gray-300 text-sm">Customized rehabilitation programs to restore function and prevent recurrence.</p>
+                        </div>
+                        <div class="p-6 bg-gray-800/50 rounded-lg glow-box">
+                            <h4 class="text-xl font-semibold mb-3 text-teal-200">Prevention</h4>
+                            <p class="text-gray-300 text-sm">Education and strategies to maintain optimal health and prevent future injuries.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="mb-12">
+                        <h3 class="text-2xl font-bold mb-6 text-teal-300">Education</h3>
+                        <div class="space-y-4">
+                            <div class="p-4 qualification-badge rounded">
+                                <h4 class="font-bold">Doctor of Physical Therapy (Peshawar)</h4>
+                            </div>
+                            <div class="p-4 qualification-badge rounded">
+                                <h4 class="font-bold">Master of Science in Physical Therapy (Neurology), Islamabad</h4>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-12">
+                        <h3 class="text-2xl font-bold mb-6 text-teal-300">Specializations</h3>
+                        <div class="flex flex-wrap gap-3">
+                            <span class="px-4 py-2 bg-teal-900/50 rounded-full text-sm glow-box">Neuro Rehabilitation</span>
+                            <span class="px-4 py-2 bg-teal-900/50 rounded-full text-sm glow-box">Sports Injuries</span>
+                            <span class="px-4 py-2 bg-teal-900/50 rounded-full text-sm glow-box">Orthopedic Treatments</span>
+                            <span class="px-4 py-2 bg-teal-900/50 rounded-full text-sm glow-box">Chiropractic Care</span>
+                            <span class="px-4 py-2 bg-teal-900/50 rounded-full text-sm glow-box">Manual Therapy</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-2xl font-bold mb-6 text-teal-300">Professional Memberships</h3>
+                        <ul class="space-y-2 text-gray-300">
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle text-teal-400 mr-2"></i> Pakistan Physical Therapy Association
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle text-teal-400 mr-2"></i> International Federation of Orthopaedic Manipulative Physical Therapists
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle text-teal-400 mr-2"></i> World Federation of Chiropractic
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Services Section -->
+    <section id="services" class="section py-20 bg-gradient-to-b from-gray-900/30 to-gray-900/70 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4 neon-text">Specialized Services</h2>
+                <div class="w-24 h-1 bg-teal-400 mx-auto mb-6"></div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Neurological Rehabilitation -->
+                <div class="service-card rounded-xl p-8 glow-box treatment-card">
+                    <div class="text-teal-400 text-4xl mb-6">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Neurological Rehabilitation</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Stroke Rehabilitation
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Cerebral Palsy
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Balance/Gait Problems
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Muscular Weakness/Spasm
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Orthopedic Treatments -->
+                <div class="service-card rounded-xl p-8 glow-box treatment-card">
+                    <div class="text-teal-400 text-4xl mb-6">
+                        <i class="fas fa-bone"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Orthopedic Treatments</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Low Back Pain / Leg Pain
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Neck Pain / Arm Pain
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Sciatica
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Frozen Shoulder
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Arthritis
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Sports Rehabilitation -->
+                <div class="service-card rounded-xl p-8 glow-box treatment-card">
+                    <div class="text-teal-400 text-4xl mb-6">
+                        <i class="fas fa-running"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Sports Rehabilitation</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Sports Related Injuries
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Post-Surgical Rehabilitation
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Performance Enhancement
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Injury Prevention Programs
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Chiropractic Care -->
+                <div class="service-card rounded-xl p-8 glow-box treatment-card">
+                    <div class="text-teal-400 text-4xl mb-6">
+                        <i class="fas fa-spine"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Chiropractic Care</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Spinal Adjustments
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Joint Mobilization
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Postural Correction
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Scoliosis Management
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Manual Therapy -->
+                <div class="service-card rounded-xl p-8 glow-box treatment-card">
+                    <div class="text-teal-400 text-4xl mb-6">
+                        <i class="fas fa-hands"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Manual Therapy</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Soft Tissue Mobilization
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Myofascial Release
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Trigger Point Therapy
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Joint Manipulation
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Special Programs -->
+                <div class="service-card rounded-xl p-8 glow-box treatment-card">
+                    <div class="text-teal-400 text-4xl mb-6">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Special Programs</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Vestibular Rehabilitation
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Pediatric Rehabilitation
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Geriatric Rehabilitation
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-400 mr-2"></i> Workplace Ergonomics
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Floating 3D Spine -->
+        <div id="spine-container" class="absolute bottom-20 right-20 w-64 h-64 opacity-30"></div>
+    </section>
+    
+    <!-- Certifications Section -->
+    <section id="certifications" class="section py-20 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4 neon-text">Professional Certifications</h2>
+                <div class="w-24 h-1 bg-teal-400 mx-auto mb-6"></div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Certified Chiropractor -->
+                <div class="certification-card">
+                    <div class="certification-inner">
+                        <div class="certification-front glow-box">
+                            <div class="text-teal-400 text-5xl mb-4">
+                                <i class="fas fa-certificate"></i>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2">Certified Chiropractor</h3>
+                            <p class="text-gray-300">Accredited by the United Kingdom regulatory body for chiropractic care.</p>
+                        </div>
+                        <div class="certification-back glow-box">
+                            <h3 class="text-xl font-bold mb-2 text-teal-300">Certified Chiropractor (UK)</h3>
+                            <p class="text-gray-300 mb-4">Completed comprehensive training in spinal manipulation and musculoskeletal treatments.</p>
+                            <div class="mt-auto text-teal-400 text-sm">
+                                <p>Year: 2019</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Orthopedic Manual Therapist -->
+                <div class="certification-card">
+                    <div class="certification-inner">
+                        <div class="certification-front glow-box">
+                            <div class="text-teal-400 text-5xl mb-4">
+                                <i class="fas fa-certificate"></i>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2">Orthopedic Manual Therapist</h3>
+                            <p class="text-gray-300">Certified in advanced manual therapy techniques for orthopedic conditions.</p>
+                        </div>
+                        <div class="certification-back glow-box">
+                            <h3 class="text-xl font-bold mb-2 text-teal-300">Orthopedic Manual Therapist (UK)</h3>
+                            <p class="text-gray-300 mb-4">Specialized training in joint mobilization, soft tissue techniques, and therapeutic exercises.</p>
+                            <div class="mt-auto text-teal-400 text-sm">
+                                <p>Year: 2020</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- MSPT Neurology -->
+                <div class="certification-card">
+                    <div class="certification-inner">
+                        <div class="certification-front glow-box">
+                            <div class="text-teal-400 text-5xl mb-4">
+                                <i class="fas fa-certificate"></i>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2">MSPT Neurology</h3>
+                            <p class="text-gray-300">Master's degree specializing in neurological physical therapy.</p>
+                        </div>
+                        <div class="certification-back glow-box">
+                            <h3 class="text-xl font-bold mb-2 text-teal-300">MSPT Neurology (Islamabad)</h3>
+                            <p class="text-gray-300 mb-4">Advanced training in the rehabilitation of stroke, spinal cord injuries, and other neurological conditions.</p>
+                            <div class="mt-auto text-teal-400 text-sm">
+                                <p>Year: 2018</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Doctor of Physical Therapy -->
+                <div class="certification-card">
+                    <div class="certification-inner">
+                        <div class="certification-front glow-box">
+                            <div class="text-teal-400 text-5xl mb-4">
+                                <i class="fas fa-certificate"></i>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2">Doctor of Physical Therapy</h3>
+                            <p class="text-gray-300">Doctoral degree in physical therapy from Peshawar.</p>
+                        </div>
+                        <div class="certification-back glow-box">
+                            <h3 class="text-xl font-bold mb-2 text-teal-300">DPT (Peshawar)</h3>
+                            <p class="text-gray-300 mb-4">Comprehensive training in all aspects of physical therapy practice.</p>
+                            <div class="mt-auto text-teal-400 text-sm">
+                                <p>Year: 2016</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Contact Section with Precise Map -->
+    <section id="contact" class="section py-20 bg-gradient-to-b from-gray-900/30 to-gray-900/70 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4 neon-text">Clinic Information</h2>
+                <div class="w-24 h-1 bg-teal-400 mx-auto mb-6"></div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+                <div class="clinic-info-card rounded-xl p-8 glow-box">
+                    <h3 class="text-2xl font-bold mb-4 text-teal-300">Elite Therapy & Sports Clinic</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="text-lg font-semibold mb-2">Location</h4>
+                            <p class="text-gray-300">Gull Health Care Center<br>Shereen Khan Chowk, Rustam, Mardan, KPK, Pakistan</p>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold mb-2">Timings</h4>
+                            <p class="text-gray-300">
+                                10:00 AM to 8:00 PM<br>
+                                Monday to Saturday<br>
+                                Closed on Sundays
+                            </p>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold mb-2">Additional Information</h4>
+                            <ul class="text-gray-300 space-y-1">
+                                <li class="flex items-center">
+                                    <i class="fas fa-check-circle text-teal-400 mr-2 text-sm"></i> Appointments recommended
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check-circle text-teal-400 mr-2 text-sm"></i> Emergency cases accepted
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check-circle text-teal-400 mr-2 text-sm"></i> Insurance billing available
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="clinic-info-card rounded-xl p-8 glow-box">
+                    <h3 class="text-2xl font-bold mb-6 text-teal-300">Contact Options</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="text-lg font-semibold mb-2">Call Directly</h4>
+                            <p class="text-gray-300">
+                                <a href="tel:0937800937" class="hover:text-teal-300 transition">0937-800937</a><br>
+                                <a href="tel:03161905348" class="hover:text-teal-300 transition">0316-1905348</a><br>
+                                <a href="tel:03337278531" class="hover:text-teal-300 transition">0333-7278531</a>
+                            </p>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold mb-2">WhatsApp</h4>
+                            <a href="https://wa.me/923167278531" class="inline-flex items-center text-teal-300 hover:text-teal-200 transition">
+                                <i class="fab fa-whatsapp mr-2"></i> Chat on WhatsApp
+                            </a>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold mb-2">Email</h4>
+                            <a href="mailto:info@drtalhapt.com" class="text-teal-300 hover:text-teal-200 transition">
+                                info@drtalhapt.com
+                            </a>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold mb-2">Emergency Appointments</h4>
+                            <p class="text-gray-300 text-sm">For urgent cases, please call directly to schedule a same-day appointment.</p>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold mb-2">Follow Up</h4>
+                            <p class="text-gray-300 text-sm">Existing patients can request follow-up appointments via WhatsApp or phone call.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-900/50 rounded-xl p-8 glow-box">
+                    <h3 class="text-2xl font-bold mb-6 text-teal-300">Book an Appointment</h3>
+                    
+                    <form id="appointment-form" class="space-y-6">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-300 mb-1">Full Name</label>
+                            <input type="text" id="name" name="name" placeholder="Your Name" required class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white placeholder-gray-500 transition">
+                        </div>
+                        
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-300 mb-1">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" placeholder="Your Phone Number" required class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white placeholder-gray-500 transition">
+                        </div>
+                        
+                        <div>
+                            <label for="message" class="block text-sm font-medium text-gray-300 mb-1">Message</label>
+                            <textarea id="message" name="message" rows="3" placeholder="Brief description of your condition or reason for appointment" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white placeholder-gray-500 transition"></textarea>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="date" class="block text-sm font-medium text-gray-300 mb-1">Preferred Date</label>
+                                <input type="date" id="date" name="date" placeholder="dd/mm/yyyy" required class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white placeholder-gray-500 transition">
+                            </div>
+                            <div>
+                                <label for="time" class="block text-sm font-medium text-gray-300 mb-1">Preferred Time</label>
+                                <select id="time" name="time" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white placeholder-gray-500 transition">
+                                    <option value="">Select preferred time</option>
+                                    <option value="Morning (10AM-12PM)">Morning (10AM-12PM)</option>
+                                    <option value="Afternoon (12PM-3PM)">Afternoon (12PM-3PM)</option>
+                                    <option value="Evening (3PM-6PM)">Evening (3PM-6PM)</option>
+                                    <option value="Night (6PM-8PM)">Night (6PM-8PM)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="w-full px-6 py-4 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition duration-300 transform hover:scale-105 glow-box">
+                            Request Appointment
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Precise Map Embed -->
+            <div class="rounded-xl overflow-hidden glow-box mt-12">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d761.7168749886166!2d72.291637!3d34.334983!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMzTCsDIwJzA1LjkiTiA3MsKwMTcnMjkuOSJF!5e0!3m2!1sen!2s!4v1719390000000!5m2!1sen!2s" 
+                        width="100%" 
+                        height="450" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+
+            <!-- Direct Link to Location -->
+            <div class="text-center mt-6">
+                <a href="https://www.google.com/maps/place/34%C2%B020'06.1%22N+72%C2%B017'28.6%22E/@34.334991,72.2912293,88m/data=!3m1!1e3!4m4!3m3!8m2!3d34.3350278!4d72.2912778?entry=ttu&g_ep=EgoyMDI1MDUyMS4wIKXMDSoASAFQAw%3D%3D" 
+                   target="_blank" 
+                   class="text-teal-300 hover:text-teal-200 inline-flex items-center">
+                    <i class="fas fa-map-marker-alt mr-2"></i> Open in Google Maps
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-900/80 backdrop-blur-sm py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-8">
+                <h3 class="text-xl font-bold neon-text">Dr. Muhammad Talha PT</h3>
+                <p class="text-gray-400 mt-2">Neuro Rehabilitation Specialist | Certified Chiropractor</p>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-500 text-sm">© 2023 Dr. Muhammad Talha PT. All rights reserved.</p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="text-gray-500 hover:text-teal-300 transition">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="text-gray-500 hover:text-teal-300 transition">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-gray-500 hover:text-teal-300 transition">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="text-gray-500 hover:text-teal-300 transition">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Back to Top Button -->
+    <a href="#home" id="back-to-top" class="fixed bottom-8 right-8 w-12 h-12 bg-teal-600/80 hover:bg-teal-700 rounded-full flex items-center justify-center text-white shadow-lg glow-box transition opacity-0 invisible">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+    
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+        
+        // Back to top button
+        window.addEventListener('scroll', function() {
+            const backToTopButton = document.getElementById('back-to-top');
+            if (window.pageYOffset > 300) {
+                backToTopButton.classList.remove('opacity-0', 'invisible');
+                backToTopButton.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopButton.classList.remove('opacity-100', 'visible');
+                backToTopButton.classList.add('opacity-0', 'invisible');
+            }
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+                
+                // Close mobile menu if open
+                document.getElementById('mobile-menu').classList.add('hidden');
+            });
+        });
+        
+        // Form submission
+        document.getElementById('appointment-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Here you would typically send the form data to a server
+            // For this example, we'll just show an alert
+            alert('Appointment request submitted successfully! We will contact you shortly to confirm.');
+            this.reset();
+        });
+        
+        // 3D Brain Background
+        let brainScene, brainCamera, brainRenderer, brainMesh;
+        
+        function initBrain() {
+            const container = document.getElementById('brain-container');
+            
+            // Scene
+            brainScene = new THREE.Scene();
+            brainScene.background = new THREE.Color(0x0a192f);
+            
+            // Camera
+            brainCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            brainCamera.position.z = 5;
+            
+            // Renderer
+            brainRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            brainRenderer.setSize(window.innerWidth, window.innerHeight);
+            brainRenderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(brainRenderer.domElement);
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0x64ffda, 0.2);
+            brainScene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0x64ffda, 0.8);
+            directionalLight.position.set(1, 1, 1);
+            brainScene.add(directionalLight);
+            
+            // Create a simple brain-like geometry (sphere with some deformation)
+            const geometry = new THREE.SphereGeometry(1.5, 32, 32);
+            
+            // Deform the sphere to look more like a brain
+            const positionAttribute = geometry.getAttribute('position');
+            const vertex = new THREE.Vector3();
+            
+            for (let i = 0; i < positionAttribute.count; i++) {
+                vertex.fromBufferAttribute(positionAttribute, i);
+                vertex.x += (Math.random() - 0.5) * 0.3;
+                vertex.y += (Math.random() - 0.5) * 0.3;
+                vertex.z += (Math.random() - 0.5) * 0.3;
+                positionAttribute.setXYZ(i, vertex.x, vertex.y, vertex.z);
+            }
+            
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x64ffda,
+                emissive: 0x64ffda,
+                emissiveIntensity: 0.1,
+                specular: 0x111111,
+                shininess: 30,
+                transparent: true,
+                opacity: 0.2,
+                wireframe: true
+            });
+            
+            brainMesh = new THREE.Mesh(geometry, material);
+            brainScene.add(brainMesh);
+            
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize);
+            
+            // Start animation
+            animateBrain();
+        }
+        
+        function onWindowResize() {
+            brainCamera.aspect = window.innerWidth / window.innerHeight;
+            brainCamera.updateProjectionMatrix();
+            brainRenderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        function animateBrain() {
+            requestAnimationFrame(animateBrain);
+            
+            if (brainMesh) {
+                brainMesh.rotation.x += 0.001;
+                brainMesh.rotation.y += 0.002;
+            }
+            
+            brainRenderer.render(brainScene, brainCamera);
+        }
+        
+        // Simple 3D Spine for services section
+        function initSpine() {
+            const container = document.getElementById('spine-container');
+            
+            // Scene
+            const scene = new THREE.Scene();
+            scene.background = null;
+            
+            // Camera
+            const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            camera.position.z = 5;
+            
+            // Renderer
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(256, 256);
+            container.appendChild(renderer.domElement);
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0x64ffda, 0.3);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0x64ffda, 0.5);
+            directionalLight.position.set(1, 1, 1);
+            scene.add(directionalLight);
+            
+            // Create a simple spine-like geometry
+            const group = new THREE.Group();
+            
+            // Vertebrae
+            for (let i = 0; i < 24; i++) {
+                const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+                const material = new THREE.MeshPhongMaterial({
+                    color: 0x64ffda,
+                    emissive: 0x64ffda,
+                    emissiveIntensity: 0.1,
+                    specular: 0x111111,
+                    shininess: 30,
+                    transparent: true,
+                    opacity: 0.6
+                });
+                
+                const vertebra = new THREE.Mesh(geometry, material);
+                vertebra.position.y = i * -0.6;
+                group.add(vertebra);
+            }
+            
+            // Spinal cord
+            const cordGeometry = new THREE.CylinderGeometry(0.1, 0.1, 14, 32);
+            const cordMaterial = new THREE.MeshPhongMaterial({
+                color: 0xffffff,
+                emissive: 0x64ffda,
+                emissiveIntensity: 0.3,
+                transparent: true,
+                opacity: 0.7
+            });
+            const cord = new THREE.Mesh(cordGeometry, cordMaterial);
+            cord.position.y = -7;
+            cord.rotation.x = Math.PI / 2;
+            group.add(cord);
+            
+            scene.add(group);
+            
+            // Animation
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                group.rotation.y += 0.01;
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+        }
+        
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initBrain();
+            initSpine();
+        });
+    </script>
+</body>
+</html>
